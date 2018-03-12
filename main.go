@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	// "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 	"github.com/go-yaml/yaml" 
+	"time"
 )  
 
 // Config is a struct to parse the healthcheck yaml.
@@ -50,6 +51,7 @@ func checkError(err error) {
 	}
 }
 
+
 func unMarshalYaml (c *Config, path string) {
 	healthCheck, err = ioutil.ReadFile(path)
 	checkError(err)
@@ -65,8 +67,9 @@ func checkHealth (h *Health, c *Config) {
 		resp, err := client.Get(url)
 		checkError(err)
 		defer resp.Body.Close()
-
-		fmt.Printf("Name: %s\nURL: %s \nResponse Status: %v\n\n", name, url, resp.Status)
+		fmt.Printf("Name: %s\nURL: %s \nResponse Status: %v\nTime: %v\n", name, url, resp.Status, time.Now())
+		
+		// save response to a struct 
 		defer wg.Done()
 	}
 
@@ -75,25 +78,24 @@ func checkHealth (h *Health, c *Config) {
 
 	for i := 0; i < len(c.Push); i++ {
     go testEndpoints(&wg, c.Push[i].URL, c.Push[i].Name)
-  }
-	wg.Wait()
+	}
 
+	wg.Wait()
 }
+
+var c Config
+var h Health
 
 func main() {
 
-	var c Config
-	var h Health
 	unMarshalYaml(&c, "./config.yml")
-	checkHealth(&h, &c)
 		
-	// r := gin.Default()
+	r := gin.Default()
 
-	// r.GET("/healthcheck", func(g *gin.Context) {
-	// 	g.JSON(200, gin.H{
-	// 		"json": "healthcheck",
-	// 	})
-	// })
+	r.GET("/healthcheck", func(g *gin.Context) {
+		checkHealth(&h, &c)
+		g.JSON(200, c.Push)
+	})
 
-	// r.Run(":3333") // listen and serve on 0.0.0.0:3333
+	r.Run(":3333") // listen and serve on 0.0.0.0:3333
 }
