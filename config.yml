@@ -1,10 +1,19 @@
 # schedule jobs to test services
 push: 
-  - name: "raven"
-    url: "http://raven.com"
+  - name: "bbc"
+    url: "http://bbc.com"
     expression: "* * * * * "
-  - name: "lonely-lizard" 
-    url: "https://lonely-lizards.com"
+  - name: "baidu" 
+    url: "http://baidu.com"
+    expression: "1 2 3 4 5"
+  - name: "bing" 
+    url: "http://bing.com"
+    expression: "1 2 3 4 5"
+  - name: "youku" 
+    url: "http://youku.com"
+    expression: "1 2 3 4 5"
+  - name: "58" 
+    url: "http://58.com"
     expression: "1 2 3 4 5"
 receive:
   - name: "mongo-backup"
