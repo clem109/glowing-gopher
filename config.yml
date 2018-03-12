@@ -1,0 +1,15 @@
+# schedule jobs to test services
+push: 
+  - name: "raven"
+    url: "http://raven.com"
+    expression: "* * * * * "
+  - name: "lonely-lizard" 
+    url: "https://lonely-lizards.com"
+    expression: "1 2 3 4 5"
+receive:
+  - name: "mongo-backup"
+    message: "I'm working "
+    token: "1232413fkdsdajkad" 
+  - name: "sms-messages"
+    message: "I'm working" 
+    token: "1232413fkdsdajkad "
