@@ -1,4 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/clem109/glowing-gopher)](https://goreportcard.com/report/clem109/glowing-gopher)
+[License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/clem109/glowing-gopher/blob/master/LICENSE)
 # Glowing-Gopher
 
 <img src="../master/gopher.jpeg?raw=true" width="300" height="300" />
