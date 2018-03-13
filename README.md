@@ -1,3 +1,4 @@
+[![Go Report Card](https://goreportcard.com/badge/clem109/glowing-gopher)](https://goreportcard.com/report/clem109/glowing-gopher)
 # Glowing-Gopher
 
 <img src="../master/gopher.jpeg?raw=true" width="300" height="300" />
