@@ -1,14 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"sync"
-	// "github.com/gin-gonic/gin"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-yaml/yaml"
@@ -32,17 +29,9 @@ type Config struct {
 
 // Health shows the status of our apps to anyone calling our healtcheck endpoint
 type Health struct {
-	Endpoints []struct {
-		Name    string `json:"name"`
-		Status  string `json:"status"`
-		Message string `json:"message"`
-	}
-	Jobs []struct {
-		Name    string `json:"name"`
-		Status  string `json:"status"`
-		Message string `json:"message"`
-		Time    string `json:"last_trigger"`
-	}
+	Name    string `json:"name"`
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
 var err error
@@ -68,35 +57,40 @@ func unMarshalYaml(c *Config, path string) {
 	checkError(err)
 	err = yaml.Unmarshal([]byte(healthCheck), &c)
 	checkError(err)
-
 }
 
-func checkHealth(h *Health, c *Config) {
-	testEndpoints := func(wg *sync.WaitGroup, url string, name string) {
-		client := &http.Client{}
-		resp, err := client.Get(url)
-		checkError(err)
-		defer resp.Body.Close()
-		fmt.Printf("Name: %s\nURL: %s \nResponse Status: %v\nTime: %v\n",
-			name, url, resp.Status, time.Now())
-		defer wg.Done()
-	}
+func testEndpoints(wg *sync.WaitGroup, url string, name string, health *[]Health) []Health {
+	client := &http.Client{}
+	resp, err := client.Get(url)
+	checkError(err)
+	defer resp.Body.Close()
 
+	// add to struct
+	h := Health{name, resp.Status, "message"}
+	*health = append(*health, h)
+	defer wg.Done()
+
+	return *health
+}
+
+func checkHealth(c *Config) []Health {
+	var healthArray []Health
 	var wg sync.WaitGroup
-	wg.Add(len(c.Push))
 
+	wg.Add(len(c.Push))
 	for i := 0; i < len(c.Push); i++ {
-		go testEndpoints(&wg, c.Push[i].URL, c.Push[i].Name)
+		go testEndpoints(&wg, c.Push[i].URL, c.Push[i].Name, &healthArray)
 	}
 	wg.Wait()
+	return healthArray
 }
 
 func startServer(port string) {
 	r := gin.Default()
 
 	r.GET("/healthcheck", func(g *gin.Context) {
-		checkHealth(&h, &c)
-		g.JSON(200, c.Push)
+		resp := checkHealth(&c)
+		g.JSON(200, resp)
 	})
 
 	r.Run(port) // listen and serve on the port provided
@@ -107,8 +101,6 @@ var h Health
 
 func main() {
 	unMarshalYaml(&c, "./config.yml")
-	checkHealth(&h, &c)
 	port := getEnv("PORT", ":3333")
 	startServer(port)
-
 }
