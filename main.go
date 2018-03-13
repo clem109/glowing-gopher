@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,22 +17,17 @@ import (
 // exported otherwise it won't work.
 type Config struct {
 	Push []struct {
-		Name       string `yaml:"name"`
-		URL        string `yaml:"url"`
-		Expression string `yaml:"expression"`
+		Name string `yaml:"name"`
+		URL  string `yaml:"url"`
 	} `yaml:"push"`
-	Receive []struct {
-		Name    string `yaml:"name"`
-		Message string `yaml:"message"`
-		Token   string `yaml:"token"`
-	} `yaml:"receive"`
 }
 
 // Health shows the status of our apps to anyone calling our healtcheck endpoint
 type Health struct {
-	Name    string `json:"name"`
-	Status  string `json:"status"`
-	Message string `json:"message"`
+	Name   string `json:"name"`
+	URL    string `json:"url"`
+	Status string `json:"status"`
+	Error  error  `json:"error"`
 }
 
 var err error
@@ -59,18 +55,23 @@ func unMarshalYaml(c *Config, path string) {
 	checkError(err)
 }
 
-func testEndpoints(wg *sync.WaitGroup, url string, name string, health *[]Health) []Health {
+func testEndpoints(wg *sync.WaitGroup, url string, name string, health *[]Health) error {
+	defer wg.Done()
 	client := &http.Client{}
 	resp, err := client.Get(url)
-	checkError(err)
+	if err != nil {
+		fmt.Printf("Error: Failed to execute the HTTP request. %s\n", err)
+		h := Health{name, url, "404", err}
+		*health = append(*health, h)
+		return err
+	}
 	defer resp.Body.Close()
 
 	// add to struct
-	h := Health{name, resp.Status, "message"}
+	h := Health{name, url, resp.Status, nil}
 	*health = append(*health, h)
-	defer wg.Done()
+	return nil
 
-	return *health
 }
 
 func checkHealth(c *Config) []Health {
