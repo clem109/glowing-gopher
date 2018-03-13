@@ -2,8 +2,8 @@
 
 <img src="../master/gopher.jpeg?raw=true" width="300" height="300" />
 
-This project is to check the health status of our services, it will notify us whether there are any issues with any of our services that we add and provides an API for testing whether the service itself is running.
+This project is to check the health status of different microservices, simply clone this repo and edit the config.yml file to your needs.
 
-It's written in Go because it's a small project and Go is cool.
+The default port is ":3333", but this can be changed using the PORT envvar.
 
-A yaml file is all that is needed to get up and running, the yaml file will include information about the endpoint to hit, expected response, and the frequency of API requests (in a cron job format). We will also expose an API endpoint to trigger healthchecks on all our services whenever requested.
+Call the "/healthcheck" endpoint and it will automatically test all the endpoints provided and return their status codes.
