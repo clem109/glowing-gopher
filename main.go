@@ -86,7 +86,7 @@ func checkHealth(c *Config) []Health {
 	return healthArray
 }
 
-func startServer(port string) {
+func startServer() {
 	r := gin.Default()
 
 	r.GET("/healthcheck", func(g *gin.Context) {
@@ -94,7 +94,7 @@ func startServer(port string) {
 		g.JSON(200, resp)
 	})
 
-	r.Run(port) // listen and serve on the port provided
+	r.Run(":3333") // listen and serve on the port provided
 }
 
 var c Config
@@ -102,6 +102,5 @@ var h Health
 
 func main() {
 	unMarshalYaml(&c, "./config.yml")
-	port := getEnv("PORT", ":3333")
-	startServer(port)
+	startServer()
 }
